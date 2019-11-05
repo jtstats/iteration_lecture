@@ -1,0 +1,201 @@
+---
+title: "Iteration and List Columns"
+author: "Jingyi"
+date: "11/4/2019"
+output: html_document
+---
+
+# Example
+
+I’ll write code for today’s content in a new R Markdown document called iteration_and_listcols.Rmd in the iteration repo / directory I started last time. The code chunk below loads the tidyverse and sets a seed for reproducibility.
+
+```{r}
+
+library(tidyverse)
+
+set.seed(1)
+
+```
+
+Things are gonna get a little weird…
+
+## Lists
+
+We need a brief digression about lists before we do anything.
+
+In R, vectors are limited to a single data class – all elements are characters, or all numeric, or all logical. Trying to join the following vectors will result in coersion, as would creating vectors of mixed types.
+
+```{r}
+
+vec_numeric = 5:8
+vec_char = c("My", "name", "is", "Jeff")
+vec_logical = c(TRUE, TRUE, TRUE, FALSE)
+
+```
+
+Lists provide a way to store anything you want. This flexibility is great, but is offset by a certain … clunkiness. Lists contain indexed elements, and the indexed elements themselves be scalars, vectors, or other things entirely.
+
+```{r}
+
+l = list(vec_numeric = 5:8,
+         mat         = matrix(1:8, 2, 4),
+         vec_logical = c(TRUE, FALSE),
+         summary     = summary(rnorm(1000)))
+l
+
+```
+
+Lists can be accessed using names or indices, and the things in lists can be accessed in the way you would usually access an object of that type.
+
+```{r}
+
+l$vec_numeric
+## [1] 5 6 7 8
+l[[1]]
+## [1] 5 6 7 8
+l[[1]][1:3]
+## [1] 5 6 7
+
+```
+
+Lists seem bizarre but are really useful. Right now, we’ll use them to hold general inputs and outputs of iterative processes. Even more importantly, we’ll see that data frames are actually a very specific kind of list – one comprised of vectors of the same length – which is why they can store variables of different types.
+
+## for loops
+
+For this example, I’m going to start with the pretty simple data frame defined below, and confirm that “under the hood” this is a list.
+
+```{r}
+
+df = tibble(
+  a = rnorm(20, 3, 1),
+  b = rnorm(20, 0, 5),
+  c = rnorm(20, 10, .2),
+  d = rnorm(20, -3, 1)
+)
+
+is.list(df)
+
+```
+
+I’d like to apply my simple mean_and_sd function from writing functions to each column of this dataframe. For completeness, that function is below.
+
+```{r}
+
+mean_and_sd = function(x) {
+  
+  if (!is.numeric(x)) {
+    stop("Argument x should be numeric")
+  } else if (length(x) == 1) {
+    stop("Cannot be computed for length 1 vectors")
+  }
+  
+  mean_x = mean(x)
+  sd_x = sd(x)
+
+  tibble(
+    mean = mean_x, 
+    sd = sd_x
+  )
+}
+
+```
+
+We can apply the mean_and_sd function to each column of df using the lines below. Throughout this content, I’ll take advantage of the fact that data frames are a kind of list – keeping this in mind when you’re iterating is really useful .
+
+```{r}
+
+mean_and_sd(df[[1]])
+## # A tibble: 1 x 2
+##    mean    sd
+##   <dbl> <dbl>
+## 1  2.70  1.12
+mean_and_sd(df[[2]])
+## # A tibble: 1 x 2
+##    mean    sd
+##   <dbl> <dbl>
+## 1 0.416  4.08
+mean_and_sd(df[[3]])
+## # A tibble: 1 x 2
+##    mean    sd
+##   <dbl> <dbl>
+## 1  10.1 0.191
+mean_and_sd(df[[4]])
+## # A tibble: 1 x 2
+##    mean    sd
+##   <dbl> <dbl>
+## 1 -3.43  1.18
+
+```
+
+But now we’ve broken our “don’t repeat code more than twice” rule! Specifically, we’ve applied the same function / operation to the elements of a list sequentially. This is exactly the kind of code repetition for loops address
+
+Below, I define an output list with the same number of entries as my target dataframe; a sequence to iterate over; and a for loop body that applies the mean_and_sd function for each sequence element and saves the result.
+
+```{r}
+
+output = vector("list", length = 4)
+
+for (i in 1:4) {
+  output[[i]] = mean_and_sd(df[[i]])
+}
+
+```
+
+This is already much cleaner than using four almost-identical lines of code, and will make life easier the larger our sequence gets.
+
+In this example, I bypassed a common first step in writing loops because I already had the function I wanted to repeat. Frequently, however, I’ll start with repeated code segements, then abstract the underlying process into a function, and then wrap things up in a for loop.
+
+## map
+
+A criticism of for loops is that there’s a lot of overhead – you have to define your output vector / list, there’s the for loop bookkeeping to do, etc – that distracts from the purpose of the code. In this case, we want to apply mean_and_sd to each column of df, but we have to scan inside the for loop to figure that out.
+
+The map functions in purrr try to make the purpose of your code clear. Compare the loop above to the line below.
+
+```{r}
+
+output = map(df, mean_and_sd)
+
+```
+
+The first argument to map is the vector / list ( / data frame) we want to iterate over, and the second argument is the function we want to apply to each element. The line above will produce the same output as the previous loop, but is clearer and easier to understand (once you’re used to map …).
+
+It’s sometimes necessary to be more specific in giving arguments to map. In particular, using .x = df for the input list and ~ mean_and_sd(.x) to specify the function applied to the input list (using .x as a placeholder) will produce the same result.
+
+```{r}
+
+output = map_df(.x  = df, ~ mean_and_sd(.x))
+
+```
+
+This code (using map) is why we pointed out in writing functions that functions can be passed as arguments to other functions. The second argument in map(df, mean_and_sd) is a function we just wrote. To see how powerful this can be, suppose we wanted to apply a different function, say median, to each column of df. The chunk below includes both the loop and the map approach.
+
+```{r}
+
+output = vector("list", length = 4)
+
+for (i in 1:4) {
+  output[[i]] = median(df[[i]])
+}
+
+output = map(df, median)
+# output = map(.x = df, ~ median(.x))
+
+```
+
+Again, both options produce the same output, but the map places the focus squarely on the function you want to apply by removing much of the bookkeeping.
+
+## `map` variants
+
+There are some useful variants to the basic map function if you know what kind of output you’re going to produce. Below we use map_dbl because median outputs a single numeric value each time; the result is a vector instead of a list. Using the .id argument keeps the names of the elements in the input list.
+
+```{r}
+
+output = map_dbl(df, median, .id = "input")
+
+output
+
+```
+
+If we tried to use map_int or map_lgl, we’d get an error because the output of median isn’t a integer or a logical. This is a good way to help catch mistakes when they arise.
+
+Similarly, since we know mean_and_sd produces a data frame, we can use the output-specific map_dfr; this will produce a single data frame.

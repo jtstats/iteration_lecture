@@ -1,5 +1,5 @@
 ---
-title: "writing Functions"
+title: "Writing Functions"
 author: "Jingyi"
 date: "11/4/2019"
 output: html_document
