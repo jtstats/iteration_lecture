@@ -373,12 +373,12 @@ summary {
 <h1>Example</h1>
 <p>I’ll write code for today’s content in a new R Markdown document called iteration_and_listcols.Rmd in the iteration repo / directory I started last time. The code chunk below loads the tidyverse and sets a seed for reproducibility.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## -- Attaching packages ---------------- tidyverse 1.2.1 --</code></pre>
 <pre><code>## v ggplot2 3.2.1     v purrr   0.3.2
 ## v tibble  2.1.3     v dplyr   0.8.3
 ## v tidyr   1.0.0     v stringr 1.4.0
 ## v readr   1.3.1     v forcats 0.4.0</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+<pre><code>## -- Conflicts ------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>set.seed(1)</code></pre>
@@ -586,20 +586,75 @@ vec_urls</code></pre>
 <pre class="r"><code>read_page_reviews(vec_urls[[1]])</code></pre>
 <pre><code>## Warning: `data_frame()` is deprecated, use `tibble()`.
 ## This warning is displayed once per session.</code></pre>
-<pre><code>## # A tibble: 0 x 3
-## # ... with 3 variables: title &lt;chr&gt;, stars &lt;dbl&gt;, text &lt;chr&gt;</code></pre>
+<pre><code>## # A tibble: 10 x 3
+##    title                     stars text                                    
+##    &lt;chr&gt;                     &lt;dbl&gt; &lt;chr&gt;                                   
+##  1 &quot;Good comedy\n          ~     4 &quot;Not as funny as I remember years ago. ~
+##  2 &quot;Awesome\n            &quot;       5 &quot;Favorite movie of all time\n          ~
+##  3 &quot;yes\n            &quot;           5 &quot;good\n            &quot;                    
+##  4 &quot;Gotta watch it!\n      ~     5 &quot;Super fun cult film. A must-see! Funni~
+##  5 &quot;Great movie\n          ~     5 &quot;Love this movie.\n            &quot;        
+##  6 &quot;Duh\n            &quot;           5 &quot;Best movie ever\n            &quot;         
+##  7 &quot;Great video\n          ~     5 &quot;Product as described.  Great transacti~
+##  8 &quot;Give me some of your to~     5 &quot;This movie will always be my favorite ~
+##  9 &quot;Nostalgic\n            &quot;     5 &quot;One of the best nostalgic movies of my~
+## 10 &quot;Make you giggle type mo~     5 &quot;I love, love, love this movie.  It mak~</code></pre>
 <pre class="r"><code>read_page_reviews(vec_urls[[2]])</code></pre>
-<pre><code>## # A tibble: 0 x 3
-## # ... with 3 variables: title &lt;chr&gt;, stars &lt;dbl&gt;, text &lt;chr&gt;</code></pre>
+<pre><code>## # A tibble: 10 x 3
+##    title                         stars text                                
+##    &lt;chr&gt;                         &lt;dbl&gt; &lt;chr&gt;                               
+##  1 &quot;This movie is so stupid.\n ~     5 &quot;No, really.  It&#39;s so stupid.  Your~
+##  2 &quot;Hilarious\n            &quot;         5 &quot;Hilarious\n            &quot;           
+##  3 &quot;Waste of money\n           ~     1 &quot;Terrible movie! Please don’t waste~
+##  4 &quot;Good movie\n            &quot;        5 &quot;Funny\n            &quot;               
+##  5 &quot;A classic\n            &quot;         5 &quot;I like your sleeves. They&#39;re real ~
+##  6 &quot;FRIKKEN SWEET MOVIE, GAWSH.~     5 &quot;It’s Napolean Dynamite. It’s charm~
+##  7 &quot;You gonna eat the rest of y~     5 &quot;One of my favorite movies ever.  Y~
+##  8 &quot;Tina you fat lard come get ~     5 &quot;It&#39;s a great movie\n            &quot;  
+##  9 &quot;Great family movie\n       ~     5 &quot;My kids as well as the adults love~
+## 10 &quot;Teens love it\n            &quot;     5 &quot;Original and funny\n            &quot;</code></pre>
 <pre class="r"><code>read_page_reviews(vec_urls[[3]])</code></pre>
-<pre><code>## # A tibble: 0 x 3
-## # ... with 3 variables: title &lt;chr&gt;, stars &lt;dbl&gt;, text &lt;chr&gt;</code></pre>
+<pre><code>## # A tibble: 10 x 3
+##    title                       stars text                                  
+##    &lt;chr&gt;                       &lt;dbl&gt; &lt;chr&gt;                                 
+##  1 &quot;Great\n            &quot;           5 &quot;Funny\n            &quot;                 
+##  2 &quot;Great Movie, Bad Packagin~     4 &quot;First off, the stick-on label on the~
+##  3 &quot;jeez napoleon\n          ~     5 &quot;gosh\n            &quot;                  
+##  4 &quot;\U0001f44d\n            &quot;      5 &quot;\U0001f44d\n            &quot;            
+##  5 &quot;A classic!\n            &quot;      5 &quot;A classic movie.  Hilarious!\n      ~
+##  6 &quot;A must own\n            &quot;      5 &quot;Great movie\n            &quot;           
+##  7 &quot;If you like 80s ...you mu~     5 &quot;My all time favorite movie. I have w~
+##  8 &quot;\U0001f918\n            &quot;      5 &quot;\U0001f918\n            &quot;            
+##  9 &quot;Super Slow Mooovie...\n  ~     1 &quot;Too slow and too damn quiet... My gi~
+## 10 &quot;Awesome!\n            &quot;        5 &quot;Love this movie !\n            &quot;</code></pre>
 <pre class="r"><code>read_page_reviews(vec_urls[[4]])</code></pre>
-<pre><code>## # A tibble: 0 x 3
-## # ... with 3 variables: title &lt;chr&gt;, stars &lt;dbl&gt;, text &lt;chr&gt;</code></pre>
+<pre><code>## # A tibble: 10 x 3
+##    title                           stars text                              
+##    &lt;chr&gt;                           &lt;dbl&gt; &lt;chr&gt;                             
+##  1 &quot;Very funny\n            &quot;          4 &quot;Very funny\n            &quot;        
+##  2 &quot;Eat your food tina\n         ~     5 &quot;Cant go wrong\n            &quot;     
+##  3 &quot;Dumb funny\n            &quot;          5 &quot;Dumb funny\n            &quot;        
+##  4 &quot;Annoying! Not in a good way.\~     1 &quot;I know that I am one of the very~
+##  5 &quot;Fun\n            &quot;                 5 &quot;Fun\n            &quot;               
+##  6 &quot;such a great movie\n         ~     5 &quot;a true comedy classic\n         ~
+##  7 &quot;Napoleon Dud\n            &quot;        3 &quot;Not impressed w/movie.\n        ~
+##  8 &quot;Five stars\n            &quot;          5 &quot;Such a weird, awesome movie\n   ~
+##  9 &quot;Fun!\n            &quot;                5 &quot;Great movie\n            &quot;       
+## 10 &quot;Funny movie- bravo for Amazon~     5 &quot;My son loves this movie, so I wa~</code></pre>
 <pre class="r"><code>read_page_reviews(vec_urls[[5]])</code></pre>
-<pre><code>## # A tibble: 0 x 3
-## # ... with 3 variables: title &lt;chr&gt;, stars &lt;dbl&gt;, text &lt;chr&gt;</code></pre>
+<pre><code>## # A tibble: 10 x 3
+##    title                          stars text                               
+##    &lt;chr&gt;                          &lt;dbl&gt; &lt;chr&gt;                              
+##  1 &quot;Movie\n            &quot;              5 &quot;Movie\n            &quot;              
+##  2 &quot;Funny movie, quotable lines\~     5 &quot;My kids quote this movie all the ~
+##  3 &quot;Great for teenagers!\n      ~     5 &quot;My students loved this movie.\n  ~
+##  4 &quot;can&#39;t believe we fell for th~     1 &quot;a pretty lame movie--can&#39;t believ~
+##  5 &quot;shut up tina you fat lard.\n~     5 &quot;i LOVE napoleon.\n            &quot;   
+##  6 &quot;Laughter is the Best Medicin~     5 &quot;FAST SHIPPING! Love this Movie! L~
+##  7 &quot;New condition\n            &quot;      5 &quot;Classic for the kids to watch.\n ~
+##  8 &quot;Napoleon, give me some of yo~     5 &quot;Cul\n            &quot;                
+##  9 &quot;Yes rent\n            &quot;           5 &quot;Always an amazing movie, classic!~
+## 10 &quot;Cult classic.\n            &quot;      5 &quot;I should’ve bought this movie a l~</code></pre>
 <pre class="r"><code>output = vector(&quot;list&quot;, length = 5)
 
 for (i in 1:5) {
@@ -817,6 +872,69 @@ weather_nest</code></pre>
 ## Coefficients:
 ## (Intercept)         tmin  
 ##       6.851        1.245</code></pre>
+<pre class="r"><code>weather_nest %&gt;% 
+  mutate(lin_models = map(data, weather_lm))</code></pre>
+<pre><code>## # A tibble: 3 x 4
+##   name           id                    data lin_models
+##   &lt;chr&gt;          &lt;chr&gt;       &lt;list&lt;df[,4]&gt;&gt; &lt;list&gt;    
+## 1 CentralPark_NY USW00094728      [366 x 4] &lt;lm&gt;      
+## 2 Waikiki_HA     USC00519397      [366 x 4] &lt;lm&gt;      
+## 3 Waterhole_WA   USS0023B17S      [366 x 4] &lt;lm&gt;</code></pre>
+<p>We’ve been using mutate to define a new variable in a data frame, especially one that is a function of an existing variable. That’s exactly what we will keep doing.</p>
+<pre class="r"><code>weather_nest = 
+  weather_nest %&gt;% 
+  mutate(models = map(data, weather_lm))
+
+weather_nest</code></pre>
+<pre><code>## # A tibble: 3 x 4
+##   name           id                    data models
+##   &lt;chr&gt;          &lt;chr&gt;       &lt;list&lt;df[,4]&gt;&gt; &lt;list&gt;
+## 1 CentralPark_NY USW00094728      [366 x 4] &lt;lm&gt;  
+## 2 Waikiki_HA     USC00519397      [366 x 4] &lt;lm&gt;  
+## 3 Waterhole_WA   USS0023B17S      [366 x 4] &lt;lm&gt;</code></pre>
+<pre class="r"><code>weather_nest %&gt;% 
+  mutate(lin_models = map(data, weather_lm)) %&gt;% 
+  select(-data) %&gt;% 
+  filter(name != &quot;CentralPark_NY&quot;)</code></pre>
+<pre><code>## # A tibble: 2 x 4
+##   name         id          models lin_models
+##   &lt;chr&gt;        &lt;chr&gt;       &lt;list&gt; &lt;list&gt;    
+## 1 Waikiki_HA   USC00519397 &lt;lm&gt;   &lt;lm&gt;      
+## 2 Waterhole_WA USS0023B17S &lt;lm&gt;   &lt;lm&gt;</code></pre>
+<p>This is great! We now have a data frame that has rows for each station; columns contain weather datasets and fitted models. This makes it very easy to keep track of models across stations, and to perform additional analyses.</p>
+<p>This is, for sure, a fairly complex bit of code, but in just a few lines we’re able to fit separate linear models to each of our stations. And, once you get used to list columns, map, and the rest of it, these lines of code are pretty clear and can be extended to larger datasets with more complex structures.</p>
+</div>
+<div id="revisiting-past-examples" class="section level2">
+<h2>Revisiting past examples</h2>
+<p>Earlier, we looked at scraping reviews of Napoleon Dynamite from several pages on Amazon. This required the creation of input and output vectors / lists; now we’ll repeat this using data frames and list columns.</p>
+<pre class="r"><code>dynamite_reviews = 
+  tibble(page = 1:5,
+         urls = str_c(url_base, page)) %&gt;% 
+  mutate(reviews = map(urls, read_page_reviews)) %&gt;% 
+  unnest() %&gt;% 
+  select(-urls)</code></pre>
+<pre><code>## Warning: `cols` is now required.
+## Please use `cols = c(reviews)`</code></pre>
+<p>I’ll also revisit a way to load and tidy the LoTR words data that starts with a dataframe containing cell ranges for each movie. Of all the approaches we’ve seen, this is probably my favorite.</p>
+<pre class="r"><code>lotr_cell_ranges = 
+  tibble(
+    movie = c(&quot;fellowship_ring&quot;, &quot;two_towers&quot;, &quot;return_king&quot;),
+    cells = c(&quot;B3:D6&quot;, &quot;F3:H6&quot;, &quot;J3:L6&quot;)
+  )
+
+lotr_tidy = 
+  lotr_cell_ranges %&gt;% 
+  mutate(
+    word_data = map(cells, ~readxl::read_excel(&quot;./data/LotR_Words.xlsx&quot;, range = .x))
+  ) %&gt;% 
+  unnest(cols = word_data) %&gt;% 
+  janitor::clean_names() %&gt;% 
+  pivot_longer(
+    female:male,
+    names_to = &quot;sex&quot;,
+    values_to = &quot;words&quot;) %&gt;%
+  mutate(race = str_to_lower(race)) %&gt;% 
+  select(movie, everything(), -cells)</code></pre>
 </div>
 </div>
 

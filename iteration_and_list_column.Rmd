@@ -384,3 +384,76 @@ map(weather_nest$data, ~lm(tmax ~ tmin, data = .x))
 
 ```
 
+```{r}
+
+weather_nest %>% 
+  mutate(lin_models = map(data, weather_lm))
+
+```
+
+We’ve been using mutate to define a new variable in a data frame, especially one that is a function of an existing variable. That’s exactly what we will keep doing.
+
+```{r}
+
+weather_nest = 
+  weather_nest %>% 
+  mutate(models = map(data, weather_lm))
+
+weather_nest
+
+```
+
+```{r}
+
+weather_nest %>% 
+  mutate(lin_models = map(data, weather_lm)) %>% 
+  select(-data) %>% 
+  filter(name != "CentralPark_NY")
+```
+
+
+This is great! We now have a data frame that has rows for each station; columns contain weather datasets and fitted models. This makes it very easy to keep track of models across stations, and to perform additional analyses.
+
+This is, for sure, a fairly complex bit of code, but in just a few lines we’re able to fit separate linear models to each of our stations. And, once you get used to list columns, map, and the rest of it, these lines of code are pretty clear and can be extended to larger datasets with more complex structures.
+
+## Revisiting past examples
+
+Earlier, we looked at scraping reviews of Napoleon Dynamite from several pages on Amazon. This required the creation of input and output vectors / lists; now we’ll repeat this using data frames and list columns.
+
+```{r}
+
+dynamite_reviews = 
+  tibble(page = 1:5,
+         urls = str_c(url_base, page)) %>% 
+  mutate(reviews = map(urls, read_page_reviews)) %>% 
+  unnest() %>% 
+  select(-urls)
+
+```
+
+I’ll also revisit a way to load and tidy the LoTR words data that starts with a dataframe containing cell ranges for each movie. Of all the approaches we’ve seen, this is probably my favorite.
+
+```{r}
+
+lotr_cell_ranges = 
+  tibble(
+    movie = c("fellowship_ring", "two_towers", "return_king"),
+    cells = c("B3:D6", "F3:H6", "J3:L6")
+  )
+
+lotr_tidy = 
+  lotr_cell_ranges %>% 
+  mutate(
+    word_data = map(cells, ~readxl::read_excel("./data/LotR_Words.xlsx", range = .x))
+  ) %>% 
+  unnest(cols = word_data) %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    female:male,
+    names_to = "sex",
+    values_to = "words") %>%
+  mutate(race = str_to_lower(race)) %>% 
+  select(movie, everything(), -cells)
+
+```
+
