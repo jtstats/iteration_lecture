@@ -502,7 +502,11 @@ for (i in 1:4) {
 <h2>map</h2>
 <p>A criticism of for loops is that there’s a lot of overhead – you have to define your output vector / list, there’s the for loop bookkeeping to do, etc – that distracts from the purpose of the code. In this case, we want to apply mean_and_sd to each column of df, but we have to scan inside the for loop to figure that out.</p>
 <p>The map functions in purrr try to make the purpose of your code clear. Compare the loop above to the line below.</p>
-<pre class="r"><code>output = map(df, mean_and_sd)</code></pre>
+<pre class="r"><code>output = map(df, mean_and_sd)
+
+output_median = map(df, median)
+
+output_summary = map(df, summary)</code></pre>
 <p>The first argument to map is the vector / list ( / data frame) we want to iterate over, and the second argument is the function we want to apply to each element. The line above will produce the same output as the previous loop, but is clearer and easier to understand (once you’re used to map …).</p>
 <p>It’s sometimes necessary to be more specific in giving arguments to map. In particular, using .x = df for the input list and ~ mean_and_sd(.x) to specify the function applied to the input list (using .x as a placeholder) will produce the same result.</p>
 <pre class="r"><code>output = map_df(.x  = df, ~ mean_and_sd(.x))</code></pre>
@@ -527,6 +531,292 @@ output</code></pre>
 ##  2.6213757  0.7210996 10.0501641 -3.5216649</code></pre>
 <p>If we tried to use map_int or map_lgl, we’d get an error because the output of median isn’t a integer or a logical. This is a good way to help catch mistakes when they arise.</p>
 <p>Similarly, since we know mean_and_sd produces a data frame, we can use the output-specific map_dfr; this will produce a single data frame.</p>
+<pre class="r"><code>output = map_dfr(df, mean_and_sd, .id = &quot;input&quot;)</code></pre>
+<p>The map_df variants can be helpful when your map statement is part of a longer chain of piped commands.</p>
+<p>Finally, map2 (and map2_dbl, etc) is helpful when your function has two arguments. In these cases, I find it very helpful to be specific about arguments using something like the following:</p>
+<pre class="r"><code>output = map(df, ~mean_and_sd(.x))
+
+# output = map2(.x = input_1, .y = input_2, ~func(arg_1 = .x, arg_2 = .y))</code></pre>
+<p>Although we won’t go into this in detail, one example where you might use this is in loading the LoTR data using functions and inputs we defined previously.</p>
+<pre class="r"><code>#lotr_data = map2_df(
+#  .x = cell_ranges, .y = movie_names, 
+#  ~lotr_load_and_tidy(path = &quot;./data/LotR_Words.xlsx&quot;, range = .x, movie_name = .y))</code></pre>
+</div>
+<div id="revisiting-napoleon" class="section level2">
+<h2>Revisiting Napoleon</h2>
+<p>In reading data from the web and elsewhere, we wrote code that allowed us to scrape information in Amazon reviews; in writing functions we wrapped that code into a function called read_page_reviews which, for a given url, produces a data frame containing review titles, star ratings, and text.</p>
+<pre class="r"><code>library(rvest)</code></pre>
+<pre><code>## Loading required package: xml2</code></pre>
+<pre><code>## 
+## Attaching package: &#39;rvest&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     pluck</code></pre>
+<pre><code>## The following object is masked from &#39;package:readr&#39;:
+## 
+##     guess_encoding</code></pre>
+<pre class="r"><code>read_page_reviews = function(url) {
+  
+  h = read_html(url)
+  
+  title = h %&gt;%
+    html_nodes(&quot;#cm_cr-review_list .review-title&quot;) %&gt;%
+    html_text()
+  
+  stars = h %&gt;%
+    html_nodes(&quot;#cm_cr-review_list .review-rating&quot;) %&gt;%
+    html_text() %&gt;%
+    str_extract(&quot;\\d&quot;) %&gt;%
+    as.numeric()
+  
+  text = h %&gt;%
+    html_nodes(&quot;.review-data:nth-child(5)&quot;) %&gt;%
+    html_text()
+  
+  data_frame(title, stars, text)
+}</code></pre>
+<pre class="r"><code>url_base = &quot;https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&amp;reviewerType=avp_only_reviews&amp;sortBy=recent&amp;pageNumber=&quot;
+vec_urls = str_c(url_base, 1:5)
+vec_urls</code></pre>
+<pre><code>## [1] &quot;https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&amp;reviewerType=avp_only_reviews&amp;sortBy=recent&amp;pageNumber=1&quot;
+## [2] &quot;https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&amp;reviewerType=avp_only_reviews&amp;sortBy=recent&amp;pageNumber=2&quot;
+## [3] &quot;https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&amp;reviewerType=avp_only_reviews&amp;sortBy=recent&amp;pageNumber=3&quot;
+## [4] &quot;https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&amp;reviewerType=avp_only_reviews&amp;sortBy=recent&amp;pageNumber=4&quot;
+## [5] &quot;https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&amp;reviewerType=avp_only_reviews&amp;sortBy=recent&amp;pageNumber=5&quot;</code></pre>
+<pre class="r"><code>read_page_reviews(vec_urls[[1]])</code></pre>
+<pre><code>## Warning: `data_frame()` is deprecated, use `tibble()`.
+## This warning is displayed once per session.</code></pre>
+<pre><code>## # A tibble: 0 x 3
+## # ... with 3 variables: title &lt;chr&gt;, stars &lt;dbl&gt;, text &lt;chr&gt;</code></pre>
+<pre class="r"><code>read_page_reviews(vec_urls[[2]])</code></pre>
+<pre><code>## # A tibble: 0 x 3
+## # ... with 3 variables: title &lt;chr&gt;, stars &lt;dbl&gt;, text &lt;chr&gt;</code></pre>
+<pre class="r"><code>read_page_reviews(vec_urls[[3]])</code></pre>
+<pre><code>## # A tibble: 0 x 3
+## # ... with 3 variables: title &lt;chr&gt;, stars &lt;dbl&gt;, text &lt;chr&gt;</code></pre>
+<pre class="r"><code>read_page_reviews(vec_urls[[4]])</code></pre>
+<pre><code>## # A tibble: 0 x 3
+## # ... with 3 variables: title &lt;chr&gt;, stars &lt;dbl&gt;, text &lt;chr&gt;</code></pre>
+<pre class="r"><code>read_page_reviews(vec_urls[[5]])</code></pre>
+<pre><code>## # A tibble: 0 x 3
+## # ... with 3 variables: title &lt;chr&gt;, stars &lt;dbl&gt;, text &lt;chr&gt;</code></pre>
+<pre class="r"><code>output = vector(&quot;list&quot;, length = 5)
+
+for (i in 1:5) {
+  output[[i]] = read_page_reviews(vec_urls[[i]])
+}</code></pre>
+</div>
+<div id="list-columns" class="section level2">
+<h2>list columns</h2>
+<pre class="r"><code>weather = 
+  rnoaa::meteo_pull_monitors(
+    c(&quot;USW00094728&quot;, &quot;USC00519397&quot;, &quot;USS0023B17S&quot;),
+    var = c(&quot;PRCP&quot;, &quot;TMIN&quot;, &quot;TMAX&quot;), 
+    date_min = &quot;2016-01-01&quot;,
+    date_max = &quot;2016-12-31&quot;) %&gt;%
+  mutate(
+    name = recode(id, USW00094728 = &quot;CentralPark_NY&quot;, 
+                      USC00519397 = &quot;Waikiki_HA&quot;,
+                      USS0023B17S = &quot;Waterhole_WA&quot;),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %&gt;%
+  select(name, id, everything())</code></pre>
+<pre><code>## Registered S3 method overwritten by &#39;crul&#39;:
+##   method                 from
+##   as.character.form_file httr</code></pre>
+<pre><code>## Registered S3 method overwritten by &#39;hoardr&#39;:
+##   method           from
+##   print.cache_info httr</code></pre>
+<pre><code>## file path:          C:\Users\Jingyi\AppData\Local\rnoaa\rnoaa\Cache/ghcnd/USW00094728.dly</code></pre>
+<pre><code>## file last updated:  2019-10-04 20:34:21</code></pre>
+<pre><code>## file min/max dates: 1869-01-01 / 2019-10-31</code></pre>
+<pre><code>## file path:          C:\Users\Jingyi\AppData\Local\rnoaa\rnoaa\Cache/ghcnd/USC00519397.dly</code></pre>
+<pre><code>## file last updated:  2019-10-04 20:34:37</code></pre>
+<pre><code>## file min/max dates: 1965-01-01 / 2019-10-31</code></pre>
+<pre><code>## file path:          C:\Users\Jingyi\AppData\Local\rnoaa\rnoaa\Cache/ghcnd/USS0023B17S.dly</code></pre>
+<pre><code>## file last updated:  2019-10-04 20:34:43</code></pre>
+<pre><code>## file min/max dates: 1999-09-01 / 2019-10-31</code></pre>
+<p>nest within station</p>
+<pre class="r"><code>weather_nest = 
+  nest(weather, data = date:tmin)
+
+weather_nest</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##   name           id                    data
+##   &lt;chr&gt;          &lt;chr&gt;       &lt;list&lt;df[,4]&gt;&gt;
+## 1 CentralPark_NY USW00094728      [366 x 4]
+## 2 Waikiki_HA     USC00519397      [366 x 4]
+## 3 Waterhole_WA   USS0023B17S      [366 x 4]</code></pre>
+<p>Here I’ve used nest by specifying a column range to collapse within remaining variable values.</p>
+<p>The name column is a character column – if you pull this column from the weather data frame, the result is a character vector. Similarly, the data column is a list column – on it’s own, it’s a list.</p>
+<pre class="r"><code>weather_nest %&gt;% pull(name)</code></pre>
+<pre><code>## [1] &quot;CentralPark_NY&quot; &quot;Waikiki_HA&quot;     &quot;Waterhole_WA&quot;</code></pre>
+<pre class="r"><code>weather_nest %&gt;% pull(data)</code></pre>
+<pre><code>## &lt;list_of&lt;
+##   tbl_df&lt;
+##     date: date
+##     prcp: double
+##     tmax: double
+##     tmin: double
+##   &gt;
+## &gt;[3]&gt;
+## [[1]]
+## # A tibble: 366 x 4
+##    date        prcp  tmax  tmin
+##    &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 2016-01-01     0   5.6   1.1
+##  2 2016-01-02     0   4.4   0  
+##  3 2016-01-03     0   7.2   1.7
+##  4 2016-01-04     0   2.2  -9.9
+##  5 2016-01-05     0  -1.6 -11.6
+##  6 2016-01-06     0   5    -3.8
+##  7 2016-01-07     0   7.8  -0.5
+##  8 2016-01-08     0   7.8  -0.5
+##  9 2016-01-09     0   8.3   4.4
+## 10 2016-01-10   457  15     4.4
+## # ... with 356 more rows
+## 
+## [[2]]
+## # A tibble: 366 x 4
+##    date        prcp  tmax  tmin
+##    &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 2016-01-01     0  29.4  16.7
+##  2 2016-01-02     0  28.3  16.7
+##  3 2016-01-03     0  28.3  16.7
+##  4 2016-01-04     0  28.3  16.1
+##  5 2016-01-05     0  27.2  16.7
+##  6 2016-01-06     0  27.2  20  
+##  7 2016-01-07    46  27.8  18.3
+##  8 2016-01-08     3  28.3  17.8
+##  9 2016-01-09     8  27.8  19.4
+## 10 2016-01-10     3  28.3  18.3
+## # ... with 356 more rows
+## 
+## [[3]]
+## # A tibble: 366 x 4
+##    date        prcp  tmax  tmin
+##    &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 2016-01-01     0   1.7  -5.9
+##  2 2016-01-02    25  -0.1  -6  
+##  3 2016-01-03     0  -5   -10  
+##  4 2016-01-04    25   0.3  -9.8
+##  5 2016-01-05    25   1.9  -1.8
+##  6 2016-01-06    25   1.4  -2.6
+##  7 2016-01-07     0   1.4  -3.9
+##  8 2016-01-08     0   1.1  -4  
+##  9 2016-01-09     0   1.4  -4.5
+## 10 2016-01-10     0   2.3  -3.8
+## # ... with 356 more rows</code></pre>
+<p>The list column really is a list, and will behave as such elsewhere in R. So, for example, you can examine the first list entry using usual list index procedures.</p>
+<pre class="r"><code>weather_nest$data[[1]]</code></pre>
+<pre><code>## # A tibble: 366 x 4
+##    date        prcp  tmax  tmin
+##    &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 2016-01-01     0   5.6   1.1
+##  2 2016-01-02     0   4.4   0  
+##  3 2016-01-03     0   7.2   1.7
+##  4 2016-01-04     0   2.2  -9.9
+##  5 2016-01-05     0  -1.6 -11.6
+##  6 2016-01-06     0   5    -3.8
+##  7 2016-01-07     0   7.8  -0.5
+##  8 2016-01-08     0   7.8  -0.5
+##  9 2016-01-09     0   8.3   4.4
+## 10 2016-01-10   457  15     4.4
+## # ... with 356 more rows</code></pre>
+<p>Of course, if you can nest data you should be able to unnest it as well, and you can (with the caveat that you’re unnesting a list column that contains a data frame).</p>
+<pre class="r"><code>unnest(weather_nest, cols = data)</code></pre>
+<pre><code>## # A tibble: 1,098 x 6
+##    name           id          date        prcp  tmax  tmin
+##    &lt;chr&gt;          &lt;chr&gt;       &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 CentralPark_NY USW00094728 2016-01-01     0   5.6   1.1
+##  2 CentralPark_NY USW00094728 2016-01-02     0   4.4   0  
+##  3 CentralPark_NY USW00094728 2016-01-03     0   7.2   1.7
+##  4 CentralPark_NY USW00094728 2016-01-04     0   2.2  -9.9
+##  5 CentralPark_NY USW00094728 2016-01-05     0  -1.6 -11.6
+##  6 CentralPark_NY USW00094728 2016-01-06     0   5    -3.8
+##  7 CentralPark_NY USW00094728 2016-01-07     0   7.8  -0.5
+##  8 CentralPark_NY USW00094728 2016-01-08     0   7.8  -0.5
+##  9 CentralPark_NY USW00094728 2016-01-09     0   8.3   4.4
+## 10 CentralPark_NY USW00094728 2016-01-10   457  15     4.4
+## # ... with 1,088 more rows</code></pre>
+<p>Nesting columns can help with data organization and comprehension by masking complexity you’re less concerned about right now and clarifying the things you are concerned about. In the weather data, it can be helpful to think of stations as the basic unit of observation, and daily weather recordings as a more granular level of observation. Nesting can also simplify the use of analytic approaches across levels of a higher variable.</p>
+</div>
+<div id="operations-on-list-columns" class="section level2">
+<h2>Operations on list columns</h2>
+<p>You will need to be able to manipulate list columns, but usual operations for columns that might appear in mutate (like mean or recode) often don’t apply to the entries in a list column.</p>
+<p>Instead, recognizing list columns as list columns motivates an approach for working with nested data frames.</p>
+<p>Suppose we want to fit the simple linear regression relating tmax to tmin for each station-specific data frame. First I’ll write a quick function that takes a data frame as the sole argument to fit this model.</p>
+<pre class="r"><code>weather_lm = function(df) {
+  lm(tmax ~ tmin, data = df)
+}</code></pre>
+<p>Let’s make sure this works on a single data frame.</p>
+<pre class="r"><code>weather_lm(weather_nest$data[[1]])</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = tmax ~ tmin, data = df)
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##       7.779        1.045</code></pre>
+<p>Great! Keeping in mind that weather$data is a list, we can apply our weather_lm function to each data frame using map.</p>
+<pre class="r"><code>map(weather_nest$data, weather_lm)</code></pre>
+<pre><code>## [[1]]
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = df)
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##       7.779        1.045  
+## 
+## 
+## [[2]]
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = df)
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##      22.489        0.326  
+## 
+## 
+## [[3]]
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = df)
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##       6.851        1.245</code></pre>
+<pre class="r"><code>map(weather_nest$data, ~lm(tmax ~ tmin, data = .x))</code></pre>
+<pre><code>## [[1]]
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = .x)
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##       7.779        1.045  
+## 
+## 
+## [[2]]
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = .x)
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##      22.489        0.326  
+## 
+## 
+## [[3]]
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = .x)
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##       6.851        1.245</code></pre>
 </div>
 </div>
 
